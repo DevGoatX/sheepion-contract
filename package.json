@@ -1,0 +1,62 @@
+{
+  "name": "chlngr_brand_sales",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "npx hardhat test",
+    "compile": "npx hardhat compile",
+    "abi": "yarn run hardhat export-abi",
+    "deploy-hardhat": "npx hardhat --network localhost run scripts/deploy-all.js",
+    "deploy-wl-hardhat": "npx hardhat --network localhost run scripts/deploy-wl.js",
+    "deploy-nft-hardhat": "npx hardhat --network localhost run scripts/deploy-nft.js",
+
+    "deploy-rinkeby": "npx hardhat --network rinkeby run scripts/deploy-all.js",
+    "deploy-wl-rinkeby": "npx hardhat --network rinkeby run scripts/deploy-wl.js",
+    "deploy-nft-rinkeby": "npx hardhat --network rinkeby run scripts/deploy-nft.js",
+
+    "deploy-ropsten": "npx hardhat --network ropsten run scripts/deploy-all.js",
+    "deploy-wl-ropsten": "npx hardhat --network ropsten run scripts/deploy-wl.js",
+    "deploy-nft-ropsten": "npx hardhat --network ropsten run scripts/deploy-nft.js",
+
+    "deploy-potest": "npx hardhat --network potest run scripts/deploy-all.js",
+    "deploy-wl-potest": "npx hardhat --network potest run scripts/deploy-wl.js",
+    "deploy-nft-potest": "npx hardhat --network potest run scripts/deploy-nft.js",
+
+    "deploy-pomain": "npx hardhat --network pomain run scripts/deploy-all.js",
+    "deploy-wl-pomain": "npx hardhat --network pomain run scripts/deploy-wl.js",
+    "deploy-nft-pomain": "npx hardhat --network pomain run scripts/deploy-nft.js",
+
+    "deploy-mainnet": "npx hardhat --network homestead run scripts/deploy-all.js",
+    "deploy-wl-mainnet": "npx hardhat --network homestead run scripts/deploy-wl.js",
+    "deploy-nft-mainnet": "npx hardhat --network homestead run scripts/deploy-nft.js",
+
+    "generate": "npx hardhat run scripts/generate.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.3",
+    "@nomiclabs/hardhat-etherscan": "^2.1.8",
+    "@nomiclabs/hardhat-ganache": "^2.0.1",
+    "@nomiclabs/hardhat-truffle5": "^2.0.3",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@nomiclabs/hardhat-web3": "^2.0.0",
+    "@openzeppelin/contracts": "^4.4.1",
+    "chai": "^4.3.4",
+    "dotenv": "^10.0.0",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.5.2",
+    "hardhat": "^2.8.0",
+    "hardhat-abi-exporter": "^2.8.0",
+    "web3": "^1.6.1"
+  },
+  "dependencies": {
+    "dayjs": "^1.10.7",
+    "joi": "^17.5.0",
+    "erc721a": "^3.0.0",
+    "multi-token-standard": "^2.2.2",
+    "yup": "^0.32.11"
+  }
+}

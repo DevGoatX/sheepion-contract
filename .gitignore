@@ -1,0 +1,30 @@
+
+/dist
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+node_modules/
+.env*
+!.env*.default
+.vscode/*
+!.vscode/settings.json.default
+
+cache/
+artifacts/
+abi/
+contracts/
+
+.yalc
+yalc.lock
+
+# IntelliJ
+.idea
+
+# macOS environment
+.DS_Store
+*/.DS_Store
