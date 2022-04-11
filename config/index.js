@@ -26,6 +26,7 @@ module.exports = {
     walletMaster: process.env.WALLET_MASTER,
     walletDev: process.env.WALLET_DEV,
     wlTokenMetaUri: process.env.WLTOKEN_META_URI,
+    nftBaseUri: process.env.NFT_BASE_URI,
     mintFee: process.env.MINT_FEE,
     wlTokenAddress: process.env.WLTOKEN_ADDRESS,
     boosterMintFee: process.env.BOOSTER_MINT_FEE,

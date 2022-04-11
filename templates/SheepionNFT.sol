@@ -22,8 +22,12 @@ contract SheepionNFT is ERC721A, Ownable {
 
   address private wlContractAddress;
 
-  constructor(address _wlContractAddress) ERC721A("{{NFT_NAME}}", "{{NFT_SYMBOL}}") {
+  event MintedNFT(address _owner, uint256 _collectionId, uint256 startId, uint256 _amount);
+  event MintedBatchNFT(address _owner, uint256[] _collectionIds, uint256 startId, uint256[] _amounts);
+
+  constructor(address _wlContractAddress, string memory _uri) ERC721A("{{NFT_NAME}}", "{{NFT_SYMBOL}}") {
     wlContractAddress = _wlContractAddress;
+    baseURI = _uri;
   }
 
   /**
@@ -132,12 +136,16 @@ contract SheepionNFT is ERC721A, Ownable {
     console.log('------ mint/sender: ', msg.sender);
     require(SheepionWL(wlContractAddress).balanceOf(msg.sender, _wlCollectionId) >= _quantity, "Sheepion NFT: You have not enough whitelist token balance to mint NFT");
     
+    uint256 startId = _currentIndex;
+
     _safeMint(msg.sender, _quantity * 5, "");
 
     console.log('------ mint/safe minted ');
 
     // burn wl tokens as quantity
     SheepionWL(wlContractAddress).burn(msg.sender, _wlCollectionId, _quantity);
+
+    emit MintedNFT(msg.sender, _wlCollectionId, startId, _quantity);
   }
 
   /**
@@ -161,11 +169,15 @@ contract SheepionNFT is ERC721A, Ownable {
 
       totalQuantity += _quantities[i] * 5;
     }
+
+    uint256 startId = _currentIndex;
     
     _safeMint(msg.sender, totalQuantity, "");
 
     console.log('------ mintBatch/safe minted ');    
     // burn wl tokens as quantity
     SheepionWL(wlContractAddress).burnBatch(msg.sender, _wlCollectionIds, _quantities);
+
+    emit MintedBatchNFT(msg.sender, _wlCollectionIds, startId, _quantities);
   }
 }

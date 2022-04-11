@@ -31,10 +31,9 @@ contract SheepionWL is ERC1155, Ownable {
   uint256 private herdMintFee = {{HERD_MINT_FEE}} ether;
 
   address payable constant public walletMaster = payable({{WALLET_MASTER}});
-  address payable constant public walletDev = payable({{WALLET_DEV}});
 
-  event MintedWLToken(address _owner, uint8 _collectionId, uint256 _amount);
-  event MintedBatchWLToken(address _owner, uint8[] _collectionIds, uint256[] _amounts);
+  event MintedWLToken(address _owner, uint256 _collectionId, uint256 _amount);
+  event MintedBatchWLToken(address _owner, uint256[] _collectionIds, uint256[] _amounts);
 
   constructor(
     string memory _uri
@@ -57,7 +56,7 @@ contract SheepionWL is ERC1155, Ownable {
   * @return true or false
   */
   function isMaster(address _account) public pure returns (bool) {
-    return walletMaster == payable(_account) || walletDev == payable(_account);
+    return walletMaster == payable(_account);
   }
 
   /**
@@ -178,6 +177,8 @@ contract SheepionWL is ERC1155, Ownable {
       totalMints += _amount;
       totalTokens += _amount;
     }
+
+    emit MintedWLToken(msg.sender, _collectionId, _amount);
   }
 
   /**
@@ -235,6 +236,8 @@ contract SheepionWL is ERC1155, Ownable {
       totalMints += totalAmount;
       totalTokens += totalAmount;
     }
+
+    emit MintedBatchWLToken(msg.sender, _collectionIds, _amounts);
   }
 
   /**

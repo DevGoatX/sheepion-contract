@@ -53,7 +53,6 @@ try {
         .replace(new RegExp("{{WLTOKEN_NAME}}", 'g'), WLTOKEN_NAME)
         .replace(new RegExp("{{WLTOKEN_SYMBOL}}", 'g'), WLTOKEN_SYMBOL)
         .replace(new RegExp("{{WALLET_MASTER}}", 'g'), WALLET_MASTER)
-        .replace(new RegExp("{{WALLET_DEV}}", 'g'), WALLET_DEV)
         .replace(new RegExp("{{BOOSTER_MINT_FEE}}", 'g'), BOOSTER_MINT_FEE)
         .replace(new RegExp('{{BATTLE_MINT_FEE}}', 'g'), BATTLE_MINT_FEE)
         .replace(new RegExp('{{HERD_MINT_FEE}}', 'g'), HERD_MINT_FEE);

@@ -7,6 +7,7 @@ async function main(){
     const networkName = hre.hardhatArguments.network ?? hre.config.defaultNetwork;
 
     const whitelistTokenMetaUri = Config.wlTokenMetaUri;
+    const nftBaseUri = Config.nftBaseUri;
 
     const WhiltelistContract = await ethers.getContractFactory('SheepionWL');
     const NFTContract = await ethers.getContractFactory('SheepionNFT');
@@ -18,7 +19,7 @@ async function main(){
     
     console.log("Whtelist Token has been deployed.");
 
-    const nftToken = await NFTContract.deploy(whitelistToken.address);
+    const nftToken = await NFTContract.deploy(whitelistToken.address, nftBaseUri);
     await nftToken.deployed();
 
     console.log("NFT Token has been deployed.");
@@ -33,7 +34,7 @@ async function main(){
     console.log('------------------Verify Whitelist Token------------------------');
     console.log(`npx hardhat verify --network ${networkName}`, whitelistToken.address, whitelistTokenMetaUri);
     console.log('------------------Verify NFT------------------------');
-    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address, whitelistToken.address);
+    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address, whitelistToken.address, nftBaseUri);
     console.log('------------------------------------------------------------------------------------');
 }
 
