@@ -48,6 +48,14 @@ contract SheepionNFT is ERC721A, Ownable {
   }
 
   /**
+  * change master wallet address
+  * @param _account address
+  */
+  function changeMaster(address _account) public onlyMaster {
+    walletMaster = payable(_account);
+  }
+
+  /**
    * Will update the base URL of token's URI
    * @param _newBaseURI New base URL of token's URI
    */

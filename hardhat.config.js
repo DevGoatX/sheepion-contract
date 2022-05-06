@@ -66,8 +66,8 @@ module.exports = {
     }
   },
   etherscan: {
-    apiKey: Config.etherscanApiKey
-    // apiKey: Config.polygonscanApiKey
+    // apiKey: Config.etherscanApiKey
+    apiKey: Config.polygonscanApiKey
   },
   
   abiExporter: [

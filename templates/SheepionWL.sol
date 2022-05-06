@@ -30,7 +30,7 @@ contract SheepionWL is ERC1155, Ownable {
   uint256 private battleMintFee = {{BATTLE_MINT_FEE}} ether;
   uint256 private herdMintFee = {{HERD_MINT_FEE}} ether;
 
-  address payable constant public walletMaster = payable({{WALLET_MASTER}});
+  address payable private walletMaster = payable({{WALLET_MASTER}});
 
   event MintedWLToken(address _owner, uint256 _collectionId, uint256 _amount);
   event MintedBatchWLToken(address _owner, uint256[] _collectionIds, uint256[] _amounts);
@@ -55,8 +55,16 @@ contract SheepionWL is ERC1155, Ownable {
   * @param _account address
   * @return true or false
   */
-  function isMaster(address _account) public pure returns (bool) {
+  function isMaster(address _account) public view returns (bool) {
     return walletMaster == payable(_account);
+  }
+
+  /**
+  * change master wallet address
+  * @param _account address
+  */
+  function changeMaster(address _account) public onlyMaster {
+    walletMaster = payable(_account);
   }
 
   /**
