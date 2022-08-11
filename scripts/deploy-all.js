@@ -34,7 +34,7 @@ async function main(){
     console.log('------------------Verify Whitelist Token------------------------');
     console.log(`npx hardhat verify --network ${networkName}`, whitelistToken.address);
     console.log('------------------Verify NFT------------------------');
-    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address, whitelistToken.address, nftBaseUri);
+    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address);
     console.log('------------------------------------------------------------------------------------');
 }
 

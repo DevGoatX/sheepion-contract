@@ -20,7 +20,7 @@ async function main(){
     console.log('------------------ Tokens Deployed ----------------');
     console.log('NFT Token :', nftToken.address);
     console.log('------------------Verify NFT------------------------');
-    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address, wlTokenAddress, nftBaseUri);
+    console.log(`npx hardhat verify --network ${networkName}`, nftToken.address);
     console.log('------------------------------------------------------------------------------------');
 }
 
