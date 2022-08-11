@@ -1,4 +1,5 @@
 const Config = require('./config');
+require('@openzeppelin/hardhat-upgrades');
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-web3");
 require("@nomiclabs/hardhat-ethers")

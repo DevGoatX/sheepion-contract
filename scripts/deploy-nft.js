@@ -1,9 +1,9 @@
-const hre = require('hardhat');
+
+const { ethers, upgrades } = require('hardhat');
 
 const Config = require('../config');
 
 async function main(){
-    const {ethers} = hre;
     const networkName = hre.hardhatArguments.network ?? hre.config.defaultNetwork;
     const wlTokenAddress = Config.wlTokenAddress;
     const nftBaseUri = Config.nftBaseUri;
@@ -12,7 +12,7 @@ async function main(){
     
     console.log("Tokens have been created.");
 
-    const nftToken = await NFTContract.deploy(wlTokenAddress, nftBaseUri);
+    const nftToken = await upgrades.deployProxy(NFTContract, [wlTokenAddress, nftBaseUri], { initializer: 'initialize' });
     await nftToken.deployed();
 
     console.log("NFT Token has been deployed.");

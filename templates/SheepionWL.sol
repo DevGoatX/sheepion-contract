@@ -3,15 +3,16 @@
 pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import '@openzeppelin/contracts/token/ERC1155/ERC1155.sol';
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 
 /**
  * @title SheepionWhitelistToken
  * SheepionWhitelistToken - ERC1155 contract that whitelists an operator address, has create and mint functionality, and supports useful standards from OpenZeppelin,
   like _exists(), name(), symbol()
  */
-contract SheepionWL is ERC1155, Ownable {
+contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
 
   uint8 public constant BOOSTER_COLLECTION_ID = 1;
   uint8 public constant BATTLE_COLLECTION_ID = 2;
@@ -23,23 +24,32 @@ contract SheepionWL is ERC1155, Ownable {
   // Contract symbol
   string public symbol;
 
-  uint256 private totalMints = 0;
-  uint256 private totalTokens = 0;
+  uint256 private totalMints;
+  uint256 private totalTokens;
 
-  uint256 private boosterMintFee = {{BOOSTER_MINT_FEE}} ether;
-  uint256 private battleMintFee = {{BATTLE_MINT_FEE}} ether;
-  uint256 private herdMintFee = {{HERD_MINT_FEE}} ether;
+  uint256 private boosterMintFee;
+  uint256 private battleMintFee;
+  uint256 private herdMintFee;
 
-  address payable private walletMaster = payable({{WALLET_MASTER}});
+  address payable private walletMaster;
 
   event MintedWLToken(address _owner, uint256 _collectionId, uint256 _amount);
   event MintedBatchWLToken(address _owner, uint256[] _collectionIds, uint256[] _amounts);
 
-  constructor(
-    string memory _uri
-  ) ERC1155(_uri) {
+  function initialize() initializer public {
+    __Ownable_init();
+
     name = "{{WLTOKEN_NAME}}";
     symbol = "{{WLTOKEN_SYMBOL}}";
+
+    totalMints = 0;
+    totalTokens = 0;
+
+    boosterMintFee = {{BOOSTER_MINT_FEE}} ether;
+    battleMintFee = {{BATTLE_MINT_FEE}} ether;
+    herdMintFee = {{HERD_MINT_FEE}} ether;
+
+    walletMaster = payable({{WALLET_MASTER}});
   }
 
   /**
@@ -145,7 +155,7 @@ contract SheepionWL is ERC1155, Ownable {
   * @param _collectionId collection id
   * @param _amount token amount
   */
-  function mint(uint256 _collectionId, uint256 _amount) external payable {
+  function mint(uint256 _collectionId, uint256 _amount) external payable nonReentrant {
     require(0 < _collectionId && _collectionId < 4, "Sheepion Whitelist Token: The collection id should be in the range of 1 to 3");
 
     uint256 mintFee = boosterMintFee;
@@ -194,7 +204,7 @@ contract SheepionWL is ERC1155, Ownable {
   * @param _collectionIds collection ids
   * @param _amounts token amounts
   */
-  function mintBatch(uint256[] memory _collectionIds, uint256[] memory _amounts) external payable {
+  function mintBatch(uint256[] memory _collectionIds, uint256[] memory _amounts) external payable nonReentrant {
     require(_collectionIds.length > 0, "Sheepion Whitelist Token: The collection id array should not be empty");
     require(_collectionIds.length == _amounts.length, "Sheepion Whitelist Token: The lengths of the collection id array and amount array should be the same");
 
@@ -254,7 +264,7 @@ contract SheepionWL is ERC1155, Ownable {
   * @param _collectionId token id
   * @param _amount token amount
   */
-  function burn(address _from, uint256 _collectionId, uint256 _amount) public onlyOwner {
+  function burn(address _from, uint256 _collectionId, uint256 _amount) public onlyOwner nonReentrant {
     require(0 < _collectionId && _collectionId < 4, "Sheepion Whitelist Token: The collection id should be in the range of 1 to 3");
 
     _burn(_from, _collectionId, _amount);
@@ -271,7 +281,7 @@ contract SheepionWL is ERC1155, Ownable {
   * @param _collectionIds token id
   * @param _amounts token amount
   */
-  function burnBatch(address _from, uint256[] memory _collectionIds, uint256[] memory _amounts) public onlyOwner {
+  function burnBatch(address _from, uint256[] memory _collectionIds, uint256[] memory _amounts) public onlyOwner nonReentrant {
     require(_collectionIds.length > 0, "Sheepion Whitelist Token: The token id array should not be empty");
     require(_collectionIds.length == _amounts.length, "Sheepion Whitelist Token: The lengths of the token id array and amount array should be the same");
 
@@ -288,7 +298,7 @@ contract SheepionWL is ERC1155, Ownable {
   /**
   * withdraw balance to only master wallet
   */
-  function withdrawAll() external onlyMaster {
+  function withdrawAll() external onlyMaster nonReentrant {
     address payable to = payable(msg.sender);
     to.transfer(address(this).balance);
   }

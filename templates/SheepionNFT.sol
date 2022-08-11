@@ -3,8 +3,9 @@
 pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "erc721a/contracts/ERC721A.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import 'erc721a-upgradeable/contracts/ERC721AUpgradeable.sol';
 import "./SheepionWL.sol";
 
 /**
@@ -12,22 +13,31 @@ import "./SheepionWL.sol";
  * SheepionNFT - ERC721 contract that whitelists an operator address, has create and mint functionality, and supports useful standards from OpenZeppelin,
   like _exists(), name(), symbol(), and totalSupply()
  */
-contract SheepionNFT is ERC721A, Ownable {
+contract SheepionNFT is ERC721AUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
   
   // base uri
   string private baseURI;
 
-  address payable private walletMaster = payable({{WALLET_MASTER}});
+  address payable private walletMaster;
   address payable constant public walletDev = payable({{WALLET_DEV}});
 
   address private wlContractAddress;
 
+  uint8 isReveal;
+
   event MintedNFT(address _owner, uint256 _collectionId, uint256 startId, uint256 _amount);
   event MintedBatchNFT(address _owner, uint256[] _collectionIds, uint256 startId, uint256[] _amounts);
 
-  constructor(address _wlContractAddress, string memory _uri) ERC721A("{{NFT_NAME}}", "{{NFT_SYMBOL}}") {
+  function initialize(address _wlContractAddress, string memory _uri) initializerERC721A initializer public {
+    __ERC721A_init("{{NFT_NAME}}", "{{NFT_SYMBOL}}");
+    __Ownable_init();
+
     wlContractAddress = _wlContractAddress;
     baseURI = _uri;
+
+    walletMaster = payable({{WALLET_MASTER}});
+    
+    isReveal = 0;
   }
 
   /**
@@ -68,8 +78,27 @@ contract SheepionNFT is ERC721A, Ownable {
    * @return base uri
    */
   function _baseURI() internal view override returns (string memory) {
+    if (isReveal == 0) return "";
+
     return baseURI;
   }
+
+  /**
+  * get reveal status
+  * @return uint8 reveal status
+  */
+  function getRevealStatus() public view returns (uint8) {
+    return isReveal;
+  }
+
+  /**
+   * Will update the pre reveal URL of tokens
+   * @param _isReveal current state is 
+   */
+  function setRevealStatus(uint8 _isReveal) public onlyMaster {
+    isReveal = _isReveal;
+  }
+
 
   /**
     * start token id should be 1
@@ -80,7 +109,7 @@ contract SheepionNFT is ERC721A, Ownable {
 
   /**
   * get whitelist contract address
-  * @return whitelist contract address
+  * @return address whitelist contract address
   */
   function getWLContractAddress() public view returns (address) {
     return wlContractAddress;
@@ -105,14 +134,14 @@ contract SheepionNFT is ERC721A, Ownable {
   /**
   * get token id list of owner
   * @param _owner the owner of token
-  * @return token id list
+  * @return uint256[] token id list
   */
   function getTokenIdsOfOwner(address _owner) public view returns (uint256[] memory) {
     uint256 tokenCounter = 0;
 
     unchecked {
       // get counter of tokens
-      for (uint256 i = _startTokenId(); i < _currentIndex; i++) {
+      for (uint256 i = _startTokenId(); i < _nextTokenId(); i++) {
         if (ownerOf(i) == _owner) {
           tokenCounter++;
         }
@@ -121,7 +150,7 @@ contract SheepionNFT is ERC721A, Ownable {
       // configure token id list
       uint256[] memory tokenIds = new uint256[](tokenCounter);
       uint8 index = 0;
-      for (uint256 i = _startTokenId(); i < _currentIndex; i++) {
+      for (uint256 i = _startTokenId(); i < _nextTokenId(); i++) {
         if (ownerOf(i) == _owner) {
           tokenIds[index] = i;
           index++;
@@ -140,11 +169,11 @@ contract SheepionNFT is ERC721A, Ownable {
   function mint(
     uint256 _wlCollectionId,
     uint256 _quantity
-  ) external {
+  ) external nonReentrant {
     console.log('------ mint/sender: ', msg.sender);
     require(SheepionWL(wlContractAddress).balanceOf(msg.sender, _wlCollectionId) >= _quantity, "Sheepion NFT: You have not enough whitelist token balance to mint NFT");
     
-    uint256 startId = _currentIndex;
+    uint256 startId = _nextTokenId();
 
     _safeMint(msg.sender, _quantity * 5, "");
 
@@ -164,7 +193,7 @@ contract SheepionNFT is ERC721A, Ownable {
   function mintBatch(
     uint256[] memory _wlCollectionIds,
     uint256[] memory _quantities
-  ) external {
+  ) external nonReentrant {
     console.log('------ mintBatch/sender: ', msg.sender);
 
     require(_wlCollectionIds.length > 0, "Sheepion NFT: The whitelist collection id array should not be empty");
@@ -178,7 +207,7 @@ contract SheepionNFT is ERC721A, Ownable {
       totalQuantity += _quantities[i] * 5;
     }
 
-    uint256 startId = _currentIndex;
+    uint256 startId = _nextTokenId();
     
     _safeMint(msg.sender, totalQuantity, "");
 

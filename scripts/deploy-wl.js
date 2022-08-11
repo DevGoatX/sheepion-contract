@@ -11,7 +11,7 @@ async function main(){
     const WhiltelistContract = await ethers.getContractFactory('SheepionWL');  
     console.log("Token has been created.");
 
-    const whitelistToken = await WhiltelistContract.deploy(whitelistTokenMetaUri);
+    const whitelistToken = await upgrades.deployProxy(WhiltelistContract, [], { initializer: 'initialize' });
     await whitelistToken.deployed();
     
     console.log("Whtelist Token has been deployed.");
@@ -19,7 +19,7 @@ async function main(){
     console.log('------------------ Tokens Deployed ----------------');
     console.log('Whitelist Token:', whitelistToken.address);
     console.log('------------------Verify Whitelist Token------------------------');
-    console.log(`npx hardhat verify --network ${networkName}`, whitelistToken.address, whitelistTokenMetaUri);
+    console.log(`npx hardhat verify --network ${networkName}`, whitelistToken.address);
     console.log('------------------------------------------------------------------------------------');
 }
 

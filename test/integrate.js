@@ -29,7 +29,7 @@ describe("Integrating", function () {
     console.log('------ whitelist contract deployed: ', wlToken.address);
 
     const NFT = await ethers.getContractFactory("SheepionNFT");
-    sheepionNFT = await NFT.deploy(wlToken.address);
+    sheepionNFT = await NFT.deploy(wlToken.address, "");
     await sheepionNFT.deployed();
     console.log('------ NFT contract deployed: ', sheepionNFT.address);
 
