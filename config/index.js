@@ -32,4 +32,7 @@ module.exports = {
     boosterMintFee: process.env.BOOSTER_MINT_FEE,
     battleMintFee: process.env.BATTLE_MINT_FEE,
     herdMintFee: process.env.HERD_MINT_FEE,
+
+    deployedNFTAddress: process.env.DEPLOYED_NFT_ADDRESS,
+    deployedWLTokenAddress: process.env.DEPLOYED_WLTOKEN_ADDRESS,
 }

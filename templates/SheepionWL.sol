@@ -33,8 +33,15 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
 
   address payable private walletMaster;
 
+  string private boosterUri;
+  string private battleUri;
+  string private herdUri;
+
   event MintedWLToken(address _owner, uint256 _collectionId, uint256 _amount);
   event MintedBatchWLToken(address _owner, uint256[] _collectionIds, uint256[] _amounts);
+  event Burned(address _from, uint256 _collectionId, uint256 _amount);
+  event BurnedBatch(address _from, uint256[] _collectionIds, uint256[] _amounts);
+  event WithdrawAll();
 
   function initialize() initializer public {
     __Ownable_init();
@@ -94,13 +101,39 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   }
 
   /**
-  * set token uri
+  * set booster collection token uri
   * @param _uri token uri
   */
-  function setURI(string memory _uri) public onlyOwner {      
-    _setURI(_uri);
+  function setBoosterURI(string memory _uri) public onlyMaster {
+    boosterUri = _uri;
   }
 
+  /**
+  * set battle collection token uri
+  * @param _uri token uri
+  */
+  function setBattleURI(string memory _uri) public onlyMaster {
+    battleUri = _uri;
+  }
+
+  /**
+  * set herd collection token uri
+  * @param _uri token uri
+  */
+  function setHerdURI(string memory _uri) public onlyMaster {
+    herdUri = _uri;
+  }
+
+  /**
+  * return uri of token
+  */
+  function uri(uint256 _id) public view override returns (string memory) {
+    if (_id == BOOSTER_COLLECTION_ID)   return boosterUri;
+    if (_id == BATTLE_COLLECTION_ID)    return battleUri;
+    if (_id == HERD_COLLECTION_ID)      return herdUri;
+    
+    return "";
+  }
 
   /**
   * get booster token mint fee
@@ -273,6 +306,8 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
       totalTokens -= _amount;
     }
     console.log('WL burn/total tokens: ', totalTokens);
+
+    emit Burned(_from, _collectionId, _amount);
   }
 
   /**
@@ -292,7 +327,9 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
         totalTokens -= _amounts[i];
       }
     }
-    console.log('WL burnBatch/total tokens: ', totalTokens);    
+    console.log('WL burnBatch/total tokens: ', totalTokens);   
+
+    emit BurnedBatch(_from, _collectionIds, _amounts);
   }
 
   /**
@@ -301,5 +338,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   function withdrawAll() external onlyMaster nonReentrant {
     address payable to = payable(msg.sender);
     to.transfer(address(this).balance);
+
+    emit WithdrawAll();
   }
 }

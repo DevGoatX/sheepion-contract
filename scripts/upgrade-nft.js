@@ -3,21 +3,16 @@ const { ethers, upgrades } = require('hardhat');
 
 const Config = require('../config');
 
-async function main(){
+async function main(){    
+    const deployedNFTAddress = Config.deployedNFTAddress;
     const networkName = hre.hardhatArguments.network ?? hre.config.defaultNetwork;
-    const wlTokenAddress = Config.wlTokenAddress;
-    const nftBaseUri = Config.nftBaseUri;
-    
-    const NFTContract = await ethers.getContractFactory('SheepionNFT');
-    
+
+    const NFTContract = await ethers.getContractFactory('SheepionNFT');    
     console.log("NFTContract have been created.");
 
-    const nftToken = await upgrades.deployProxy(NFTContract, [wlTokenAddress, nftBaseUri], { initializer: 'initialize' });
-    await nftToken.deployed();
-
-    console.log("NFT Token has been deployed.");
-
-    console.log('------------------ Tokens Deployed ----------------');
+    const nftToken = await upgrades.upgradeProxy(deployedNFTAddress, NFTContract);
+    console.log("NFT Token has been upgraded.");
+    
     console.log('NFT Token :', nftToken.address);
     console.log('------------------Verify NFT------------------------');
     console.log(`npx hardhat verify --network ${networkName}`, nftToken.address);
