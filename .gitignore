@@ -25,6 +25,8 @@ yalc.lock
 # IntelliJ
 .idea
 
+.openzeppelin/
+
 # macOS environment
 .DS_Store
 */.DS_Store

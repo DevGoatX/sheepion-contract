@@ -25,7 +25,7 @@ async function main(){
     console.log("NFT Token has been deployed.");
 
     // TransferOwnership to Sale Contract
-    const txWhitelistToken = await whitelistToken.transferOwnership(nftToken.address);
+    const txWhitelistToken = await whitelistToken.setBurner(nftToken.address);
     await txWhitelistToken;
 
     console.log('------------------ Tokens Deployed ----------------');

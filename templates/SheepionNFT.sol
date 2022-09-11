@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import 'erc721a-upgradeable/contracts/ERC721AUpgradeable.sol';
 import "./SheepionWL.sol";
 
@@ -13,14 +13,12 @@ import "./SheepionWL.sol";
  * SheepionNFT - ERC721 contract that whitelists an operator address, has create and mint functionality, and supports useful standards from OpenZeppelin,
   like _exists(), name(), symbol(), and totalSupply()
  */
-contract SheepionNFT is ERC721AUpgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract SheepionNFT is ERC721AUpgradeable, AccessControlUpgradeable, ReentrancyGuardUpgradeable {
   
+  bytes32 public constant MASTER_ROLE = keccak256("MASTER_ROLE");
+
   // base uri
   string private baseURI;
-
-  address payable private walletMaster;
-  address payable constant public walletDev = payable({{WALLET_DEV}});
-
   address private wlContractAddress;
 
   uint8 isReveal;
@@ -30,46 +28,44 @@ contract SheepionNFT is ERC721AUpgradeable, OwnableUpgradeable, ReentrancyGuardU
 
   function initialize(address _wlContractAddress, string memory _uri) initializerERC721A initializer public {
     __ERC721A_init("{{NFT_NAME}}", "{{NFT_SYMBOL}}");
-    __Ownable_init();
+    __AccessControl_init();
+
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
     wlContractAddress = _wlContractAddress;
     baseURI = _uri;
-
-    walletMaster = payable({{WALLET_MASTER}});
     
     isReveal = 0;
+
+    _setupRole(MASTER_ROLE, {{WALLET_MASTER}});
+    _setupRole(MASTER_ROLE, {{WALLET_DEV}});
   }
 
-  /**
-  * Require msg.sender to be the master
-  */
-  modifier onlyMaster() {
-    require(isMaster(msg.sender), "Sheepion NFT: You are not a Master");
-    _;
-  }
-
-  /**
-  * get account is master or not
-  * @param _account address
-  * @return true or false
-  */
-  function isMaster(address _account) public view returns (bool) {
-    return walletMaster == payable(_account) || walletDev == payable(_account);
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721AUpgradeable, AccessControlUpgradeable) returns (bool) {
+    return super.supportsInterface(interfaceId);
   }
 
   /**
   * change master wallet address
   * @param _account address
   */
-  function changeMaster(address _account) public onlyMaster {
-    walletMaster = payable(_account);
+  function changeMaster(address _account) public onlyRole(MASTER_ROLE) {
+    _revokeRole(MASTER_ROLE, msg.sender);
+    _setupRole(MASTER_ROLE, _account);
+  }
+
+  /**
+  * return true or false
+  */
+  function isMaster(address _account) public view returns (bool) {
+    return hasRole(MASTER_ROLE, _account);
   }
 
   /**
    * Will update the base URL of token's URI
    * @param _newBaseURI New base URL of token's URI
    */
-  function setBaseURI(string memory _newBaseURI) public onlyMaster {
+  function setBaseURI(string memory _newBaseURI) public onlyRole(MASTER_ROLE) {
     baseURI = _newBaseURI;
   }
 
@@ -95,7 +91,7 @@ contract SheepionNFT is ERC721AUpgradeable, OwnableUpgradeable, ReentrancyGuardU
    * Will update the pre reveal URL of tokens
    * @param _isReveal current state is 
    */
-  function setRevealStatus(uint8 _isReveal) public onlyMaster {
+  function setRevealStatus(uint8 _isReveal) public onlyRole(MASTER_ROLE) {
     isReveal = _isReveal;
   }
 
@@ -119,16 +115,8 @@ contract SheepionNFT is ERC721AUpgradeable, OwnableUpgradeable, ReentrancyGuardU
   * set whitelist contract address
   * @param _wlContractAddress whitelist contract address
   */
-  function setWLContractAddress(address _wlContractAddress) public onlyMaster {
+  function setWLContractAddress(address _wlContractAddress) public onlyRole(MASTER_ROLE) {
     wlContractAddress = _wlContractAddress;
-  }
-
-  /**
-  * change ownership for whitelist contract address
-  * @param _newAddress new owner address of whitelist contract
-  */
-  function changeOwnershipOfWLToken(address _newAddress) public onlyMaster {
-    SheepionWL(wlContractAddress).transferOwnership(_newAddress);
   }
 
   /**

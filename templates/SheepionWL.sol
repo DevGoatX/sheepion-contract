@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
 import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol';
 
 /**
@@ -12,7 +12,10 @@ import '@openzeppelin/contracts-upgradeable/token/ERC1155/ERC1155Upgradeable.sol
  * SheepionWhitelistToken - ERC1155 contract that whitelists an operator address, has create and mint functionality, and supports useful standards from OpenZeppelin,
   like _exists(), name(), symbol()
  */
-contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUpgradeable {
+contract SheepionWL is ERC1155Upgradeable, AccessControlUpgradeable, ReentrancyGuardUpgradeable {
+
+  bytes32 public constant MASTER_ROLE = keccak256("MASTER_ROLE");
+  bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
 
   uint8 public constant BOOSTER_COLLECTION_ID = 1;
   uint8 public constant BATTLE_COLLECTION_ID = 2;
@@ -31,8 +34,6 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   uint256 private battleMintFee;
   uint256 private herdMintFee;
 
-  address payable private walletMaster;
-
   string private boosterUri;
   string private battleUri;
   string private herdUri;
@@ -44,7 +45,9 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   event WithdrawAll();
 
   function initialize() initializer public {
-    __Ownable_init();
+    __AccessControl_init();
+
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
 
     name = "{{WLTOKEN_NAME}}";
     symbol = "{{WLTOKEN_SYMBOL}}";
@@ -56,32 +59,35 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
     battleMintFee = {{BATTLE_MINT_FEE}} ether;
     herdMintFee = {{HERD_MINT_FEE}} ether;
 
-    walletMaster = payable({{WALLET_MASTER}});
+    _setupRole(MASTER_ROLE, {{WALLET_MASTER}});
+  }
+
+  function supportsInterface(bytes4 interfaceId) public view virtual override(ERC1155Upgradeable, AccessControlUpgradeable) returns (bool) {
+    return super.supportsInterface(interfaceId);
   }
 
   /**
-  * Require msg.sender to be the master or dev team
-  */
-  modifier onlyMaster() {
-    require(isMaster(msg.sender), "Sheepion Whitelist Token: You are not a Master");
-    _;
-  }
-
-  /**
-  * get account is master or not
+  * set burner role
   * @param _account address
-  * @return true or false
+  */
+  function setBurner(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) {
+    _setupRole(BURNER_ROLE, _account);
+  }
+
+  /**
+  * change master role
+  * @param _account address
+  */
+  function changeMaster(address _account) public onlyRole(MASTER_ROLE) {
+    _revokeRole(MASTER_ROLE, msg.sender);
+    _setupRole(MASTER_ROLE, _account);
+  }
+
+  /**
+  * return true or false
   */
   function isMaster(address _account) public view returns (bool) {
-    return walletMaster == payable(_account);
-  }
-
-  /**
-  * change master wallet address
-  * @param _account address
-  */
-  function changeMaster(address _account) public onlyMaster {
-    walletMaster = payable(_account);
+    return hasRole(MASTER_ROLE, _account);
   }
 
   /**
@@ -104,7 +110,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set booster collection token uri
   * @param _uri token uri
   */
-  function setBoosterURI(string memory _uri) public onlyMaster {
+  function setBoosterURI(string memory _uri) public onlyRole(MASTER_ROLE) {
     boosterUri = _uri;
   }
 
@@ -112,7 +118,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set battle collection token uri
   * @param _uri token uri
   */
-  function setBattleURI(string memory _uri) public onlyMaster {
+  function setBattleURI(string memory _uri) public onlyRole(MASTER_ROLE) {
     battleUri = _uri;
   }
 
@@ -120,7 +126,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set herd collection token uri
   * @param _uri token uri
   */
-  function setHerdURI(string memory _uri) public onlyMaster {
+  function setHerdURI(string memory _uri) public onlyRole(MASTER_ROLE) {
     herdUri = _uri;
   }
 
@@ -147,7 +153,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set booster token mint fee
   * @param _boosterMintFee booster token mint fee
   */
-  function setBoosterMintFee(uint256 _boosterMintFee) public onlyMaster {
+  function setBoosterMintFee(uint256 _boosterMintFee) public onlyRole(MASTER_ROLE) {
     boosterMintFee = _boosterMintFee;
   }
 
@@ -163,7 +169,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set battle token mint fee
   * @param _battleMintFee battle token mint fee
   */
-  function setBattleMintFee(uint256 _battleMintFee) public onlyMaster {
+  function setBattleMintFee(uint256 _battleMintFee) public onlyRole(MASTER_ROLE) {
     battleMintFee = _battleMintFee;
   }
 
@@ -179,7 +185,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * set herd token mint fee
   * @param _herdMintFee herd token mint fee
   */
-  function setHerdMintFee(uint256 _herdMintFee) public onlyMaster {
+  function setHerdMintFee(uint256 _herdMintFee) public onlyRole(MASTER_ROLE) {
     herdMintFee = _herdMintFee;
   }
 
@@ -200,7 +206,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
     console.log('WL mint/address balance:', msg.value);
     console.log('WL mint/required:       ', mintFee * _amount);
     
-    if (!isMaster(msg.sender)) {
+    if (!hasRole(MASTER_ROLE, msg.sender)) {
         require(msg.value > mintFee * _amount - 1, "Sheepion Whitelist Token: Not enough Matic sent");
 
         // perform mint
@@ -261,7 +267,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
     console.log('WL mintBatch/address balance:', msg.value);
     console.log('WL mintBatch/required:       ', totalMintFee);
     
-    if (!isMaster(msg.sender)) {
+    if (!hasRole(MASTER_ROLE, msg.sender)) {
         require(msg.value > totalMintFee - 1, "Sheepion Whitelist Token: Not enough Matic sent");
 
         // perform mint batch
@@ -297,7 +303,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * @param _collectionId token id
   * @param _amount token amount
   */
-  function burn(address _from, uint256 _collectionId, uint256 _amount) public onlyOwner nonReentrant {
+  function burn(address _from, uint256 _collectionId, uint256 _amount) public onlyRole(BURNER_ROLE) nonReentrant {
     require(0 < _collectionId && _collectionId < 4, "Sheepion Whitelist Token: The collection id should be in the range of 1 to 3");
 
     _burn(_from, _collectionId, _amount);
@@ -316,7 +322,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   * @param _collectionIds token id
   * @param _amounts token amount
   */
-  function burnBatch(address _from, uint256[] memory _collectionIds, uint256[] memory _amounts) public onlyOwner nonReentrant {
+  function burnBatch(address _from, uint256[] memory _collectionIds, uint256[] memory _amounts) public onlyRole(BURNER_ROLE)  nonReentrant {
     require(_collectionIds.length > 0, "Sheepion Whitelist Token: The token id array should not be empty");
     require(_collectionIds.length == _amounts.length, "Sheepion Whitelist Token: The lengths of the token id array and amount array should be the same");
 
@@ -335,7 +341,7 @@ contract SheepionWL is ERC1155Upgradeable, OwnableUpgradeable, ReentrancyGuardUp
   /**
   * withdraw balance to only master wallet
   */
-  function withdrawAll() external onlyMaster nonReentrant {
+  function withdrawAll() external onlyRole(MASTER_ROLE) nonReentrant {
     address payable to = payable(msg.sender);
     to.transfer(address(this).balance);
 
