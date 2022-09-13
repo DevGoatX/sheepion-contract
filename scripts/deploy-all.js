@@ -6,6 +6,8 @@ const Config = require('../config');
 async function main(){
     const networkName = hre.hardhatArguments.network ?? hre.config.defaultNetwork;
 
+    console.log(`----- network name: ${networkName}`);
+
     const whitelistTokenMetaUri = Config.wlTokenMetaUri;
     const nftBaseUri = Config.nftBaseUri;
 
